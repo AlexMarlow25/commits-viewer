@@ -64,16 +64,28 @@
             <span>{{ group.label }}</span>
             <span class="group__subtitle">{{ group.countLabel }}</span>
           </div>
-          <button class="copy" type="button" @click="copyDay(group, $event)">Copy day summary</button>
+          <div class="group__actions">
+            <button
+              class="collapse"
+              type="button"
+              :aria-expanded="!collapsedDays[group.key]"
+              @click="toggleDay(group.key)"
+            >
+              {{ collapsedDays[group.key] ? "Expand" : "Collapse" }}
+            </button>
+            <button class="copy" type="button" @click="copyDay(group, $event)">Copy day summary</button>
+          </div>
         </div>
-        <div class="group__body">
+        <div class="group__body" v-if="!collapsedDays[group.key]">
           <article class="card" v-for="commit in group.items" :key="commit.hash">
-            <div class="card__top">
-              <div class="hash">{{ commit.hash }}</div>
-              <div class="type" :data-kind="commit.type">{{ commit.type }}</div>
-              <div class="repo" v-if="commit.repoLabel">{{ commit.repoLabel }}</div>
+            <div class="card__header">
+              <div class="message">{{ commit.message }}</div>
+              <div class="card__badges">
+                <div class="type" :data-kind="commit.type">{{ commit.type }}</div>
+                <div class="repo" v-if="commit.repoLabel">{{ commit.repoLabel }}</div>
+                <div class="hash">{{ commit.hash }}</div>
+              </div>
             </div>
-            <div class="message">{{ commit.message }}</div>
             <div class="meta">
               <span>{{ commit.dateObj.toLocaleString() }}</span>
               <button class="copy" type="button" @click="copy(commit.hash, 'hash', $event)">Copy hash</button>
@@ -153,6 +165,7 @@ const search = ref("");
 const typeFilter = ref("all");
 const sort = ref<"desc" | "asc">("desc");
 const since = ref(new Date(Date.now() - daysBack.value * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+const collapsedDays = ref<Record<string, boolean>>({});
 
 const totalCountLabel = computed(() => (commits.value.length ? `${commits.value.length} commits` : "—"));
 
@@ -248,6 +261,10 @@ function copyDay(group: { items: Commit[] }, event: Event) {
   }
 }
 
+function toggleDay(key: string) {
+  collapsedDays.value[key] = !collapsedDays.value[key];
+}
+
 function refresh() {
   loading.value = true;
   props.vscode.postMessage({ type: "refresh" });
@@ -278,16 +295,18 @@ const repoListTitle = computed(() => (repos.value.length ? repos.value.join("\n"
 <style>
 :root {
   --bg: linear-gradient(135deg, #0f172a, #1d2b4f 35%, #122b39 70%, #0b1724);
-  --panel: rgba(255, 255, 255, 0.06);
-  --panel-strong: rgba(255, 255, 255, 0.12);
+  --panel: rgba(15, 23, 42, 0.72);
+  --panel-strong: rgba(20, 30, 52, 0.9);
   --accent: #48e5c2;
   --accent-2: #7bc7ff;
   --text: #e8edf5;
   --muted: #9fb3c8;
   --danger: #ff7b72;
-  --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-  --radius: 16px;
-  --blur: blur(14px);
+  --shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+  --blur: blur(8px);
   --font: "SF Pro Display", "Segoe UI", "Ubuntu", "Cantarell", system-ui, -apple-system, sans-serif;
 }
 * {
@@ -308,35 +327,12 @@ body {
   width: min(1100px, 100%);
   background: var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   backdrop-filter: var(--blur);
   padding: 24px;
   position: relative;
   overflow: hidden;
-}
-.shell::before,
-.shell::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(50px);
-  opacity: 0.6;
-  pointer-events: none;
-}
-.shell::before {
-  width: 260px;
-  height: 260px;
-  background: radial-gradient(circle, rgba(72, 229, 194, 0.25), transparent 60%);
-  top: -80px;
-  right: -60px;
-}
-.shell::after {
-  width: 280px;
-  height: 280px;
-  background: radial-gradient(circle, rgba(123, 199, 255, 0.28), transparent 60%);
-  bottom: -100px;
-  left: -80px;
 }
 header {
   display: flex;
@@ -358,7 +354,7 @@ h1 {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--panel-strong);
   color: var(--muted);
   font-size: 13px;
@@ -374,12 +370,11 @@ h1 {
 .control {
   background: var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   display: flex;
   gap: 10px;
   align-items: center;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .control label {
   font-size: 12px;
@@ -408,9 +403,9 @@ h1 {
 }
 .pill {
   padding: 8px 12px;
-  background: var(--panel);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 13px;
   cursor: pointer;
@@ -422,7 +417,7 @@ h1 {
 .pill.active {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(72, 229, 194, 0.08);
+  background: rgba(72, 229, 194, 0.1);
 }
 .stats {
   display: grid;
@@ -432,7 +427,7 @@ h1 {
 }
 .stat {
   padding: 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   background: var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -451,10 +446,9 @@ h1 {
   z-index: 1;
 }
 .group {
-  border-radius: 14px;
+  border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
   overflow: hidden;
 }
 .group__header {
@@ -463,8 +457,13 @@ h1 {
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.22);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.group__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .group__title {
   font-size: 16px;
@@ -484,37 +483,43 @@ h1 {
 }
 .card {
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: var(--radius);
   background: var(--panel);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 .card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(72, 229, 194, 0.3);
-  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-1px);
+  border-color: rgba(72, 229, 194, 0.22);
+  background: rgba(255, 255, 255, 0.03);
 }
-.card__top {
+.card__header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  align-items: baseline;
-  margin-bottom: 6px;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 10px;
   flex-wrap: wrap;
+}
+.card__badges {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .hash {
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 14px;
   padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: rgba(0, 0, 0, 0.25);
   color: var(--accent-2);
   letter-spacing: 0.2px;
 }
 .type {
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -522,35 +527,42 @@ h1 {
   color: var(--muted);
 }
 .type[data-kind="feat"] {
-  color: #9ef0c0;
-  border-color: rgba(158, 240, 192, 0.3);
+  color: #8be9a3;
+  border-color: rgba(139, 233, 163, 0.35);
+  background: rgba(139, 233, 163, 0.08);
 }
 .type[data-kind="fix"] {
-  color: var(--accent-2);
-  border-color: rgba(123, 199, 255, 0.3);
+  color: #ff7b72;
+  border-color: rgba(255, 123, 114, 0.4);
+  background: rgba(255, 123, 114, 0.08);
 }
 .type[data-kind="refactor"] {
-  color: #f4d35e;
-  border-color: rgba(244, 211, 94, 0.4);
+  color: #f2c97d;
+  border-color: rgba(242, 201, 125, 0.45);
+  background: rgba(242, 201, 125, 0.08);
 }
 .type[data-kind="build"] {
-  color: #f78da7;
-  border-color: rgba(247, 141, 167, 0.35);
+  color: #b38bff;
+  border-color: rgba(179, 139, 255, 0.4);
+  background: rgba(179, 139, 255, 0.08);
 }
 .type[data-kind="merge"] {
-  color: var(--muted);
+  color: #8fb3d9;
+  border-color: rgba(143, 179, 217, 0.35);
+  background: rgba(143, 179, 217, 0.06);
 }
 .repo {
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   border: 1px dashed rgba(255, 255, 255, 0.2);
   color: var(--accent-2);
 }
 .message {
   font-size: 16px;
-  margin: 6px 0 8px;
-  color: #f6f8ff;
+  margin: 0;
+  color: #f1f5ff;
+  line-height: 1.4;
 }
 .meta {
   display: flex;
@@ -565,10 +577,24 @@ button.copy {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: transparent;
   color: var(--text);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 13px;
   transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+button.collapse {
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+button.collapse:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text);
 }
 button.copy:hover {
   transform: translateY(-1px);
@@ -582,7 +608,7 @@ button.copy:active {
   padding: 30px;
   color: var(--muted);
   background: var(--panel);
-  border-radius: 12px;
+  border-radius: var(--radius);
   border: 1px dashed rgba(255, 255, 255, 0.2);
 }
 footer {
@@ -592,9 +618,12 @@ footer {
   text-align: right;
 }
 @media (max-width: 640px) {
-  .card__top {
+  .card__header {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .card__badges {
+    justify-content: flex-start;
   }
   body {
     padding: 14px;
