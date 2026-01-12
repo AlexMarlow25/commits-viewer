@@ -46,7 +46,12 @@
     [
       "@semantic-release/github",
       {
-        "assets": "commit-timesheet-helper-${nextRelease.version}.vsix"
+        "assets": [
+          {
+            "path": "commit-timesheet-helper-*.vsix",
+            "label": "VS Code Extension (.vsix)"
+          }
+        ]
       }
     ]
   ]
