@@ -7,6 +7,10 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlexMarlow25/commits-viewer.git"
+  },
   "main": "./extension.js",
   "engines": {
     "vscode": "^1.90.0"
@@ -15,7 +19,7 @@
     "onCommand:commitTimesheet.open"
   ],
   "scripts": {
-    "package:local": "NODE_OPTIONS=\"--require ./scripts/vsce-cpu-fix.cjs\" vsce package --allow-missing-repository --skip-license",
+    "package:local": "NODE_OPTIONS=\"--require ./scripts/vsce-cpu-fix.cjs\" npx vsce package --skip-license",
     "package:patch": "npm version patch --no-git-tag-version && npm run package:local"
   },
   "contributes": {
@@ -44,5 +48,10 @@
         }
       }
     }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.3.1",
+    "@commitlint/config-conventional": "^20.3.1",
+    "@vscode/vsce": "^3.7.1"
   }
 }
