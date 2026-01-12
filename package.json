@@ -19,7 +19,9 @@
     "onCommand:commitTimesheet.open"
   ],
   "scripts": {
-    "package:local": "NODE_OPTIONS=\"--require ./scripts/vsce-cpu-fix.cjs\" npx vsce package --skip-license",
+    "build:webview": "vite build",
+    "watch:webview": "vite build --watch",
+    "package:local": "npm run build:webview && NODE_OPTIONS=\"--require ./scripts/vsce-cpu-fix.cjs\" npx vsce package --skip-license",
     "package:patch": "npm version patch --no-git-tag-version && npm run package:local",
     "release": "semantic-release",
     "hooks:install": "git config core.hooksPath scripts/githooks",
@@ -59,7 +61,12 @@
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^12.0.2",
     "@semantic-release/npm": "^13.1.3",
+    "@types/node": "^25.0.6",
+    "@vitejs/plugin-vue": "^6.0.3",
     "@vscode/vsce": "^3.7.1",
-    "semantic-release": "^25.0.2"
+    "semantic-release": "^25.0.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vue": "^3.5.26"
   }
 }

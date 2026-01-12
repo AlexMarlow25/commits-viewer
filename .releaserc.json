@@ -30,7 +30,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "NODE_OPTIONS=\"--require ./scripts/vsce-cpu-fix.cjs\" npx vsce package --skip-license --out commit-timesheet-helper-${nextRelease.version}.vsix"
+        "prepareCmd": "npm run build:webview && NODE_OPTIONS=\"--require ./scripts/vsce-cpu-fix.cjs\" npx vsce package --skip-license --out commit-timesheet-helper-${nextRelease.version}.vsix"
       }
     ],
     [
