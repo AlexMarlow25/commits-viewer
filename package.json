@@ -2,7 +2,7 @@
   "publisher": "local-dev",
   "name": "commit-timesheet-helper",
   "displayName": "Commit Timesheet Helper",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "View grouped commits and copy daily summaries for timesheets inside VS Code.",
   "categories": [
     "Other"
