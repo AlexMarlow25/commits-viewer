@@ -1,0 +1,4 @@
+.vscode/**
+scripts/**
+commits.html
+commits-live-server.js

@@ -1,0 +1,48 @@
+{
+  "publisher": "local-dev",
+  "name": "commit-timesheet-helper",
+  "displayName": "Commit Timesheet Helper",
+  "version": "0.0.3",
+  "description": "View grouped commits and copy daily summaries for timesheets inside VS Code.",
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "activationEvents": [
+    "onCommand:commitTimesheet.open"
+  ],
+  "scripts": {
+    "package:local": "NODE_OPTIONS=\"--require ./scripts/vsce-cpu-fix.cjs\" vsce package --allow-missing-repository --skip-license",
+    "package:patch": "npm version patch --no-git-tag-version && npm run package:local"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "commitTimesheet.open",
+        "title": "Commit Timesheet: Open Viewer"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Commit Timesheet Helper",
+      "properties": {
+        "commitTimesheet.daysBack": {
+          "type": "number",
+          "default": 30,
+          "description": "How many days back to fetch commits (uses git --since)."
+        },
+        "commitTimesheet.author": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Optional git author filter. If null, falls back to `git config user.name`."
+        }
+      }
+    }
+  }
+}
