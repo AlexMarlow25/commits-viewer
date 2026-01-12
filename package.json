@@ -21,7 +21,9 @@
   "scripts": {
     "package:local": "NODE_OPTIONS=\"--require ./scripts/vsce-cpu-fix.cjs\" npx vsce package --skip-license",
     "package:patch": "npm version patch --no-git-tag-version && npm run package:local",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "hooks:install": "git config core.hooksPath scripts/githooks",
+    "postinstall": "npm run hooks:install"
   },
   "contributes": {
     "commands": [
@@ -51,6 +53,8 @@
     }
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.3.1",
+    "@commitlint/config-conventional": "^20.3.1",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^12.0.2",
